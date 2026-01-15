@@ -1,4 +1,4 @@
 ﻿{
-    "message":  "User successfully logged in",
-    "token":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzY4NDM5NjA2LCJleHAiOjE3Njg0NDMyMDZ9.9hkCYSHZ8iY2uWrp6xRdIKXMWIyD6Y6VkP-KgoFr1Z8"
+    "message":  "Login successful!",
+    "token":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZpbmFsdXNlciIsImlhdCI6MTc2ODQ0MDA2NCwiZXhwIjoxNzY4NDQzNjY0fQ.7800uElz6fU4Y35YG_B048zSRmAFbs0RZBbPCwZJ2W4"
 }

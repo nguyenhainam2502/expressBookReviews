@@ -1,5 +1,5 @@
 ﻿{
-    "message":  "Review successfully deleted",
+    "message":  "Review for ISBN 1 deleted",
     "reviews":  {
 
                 }
