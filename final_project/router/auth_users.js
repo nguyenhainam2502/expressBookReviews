@@ -15,7 +15,7 @@ const authenticatedUser = (username, password) => {
   return users.some(user => user.username === username && user.password === password);
 }
 
-// Task 8: Only registered users can login
+// Task 8: Login with simple /login endpoint  
 regd_users.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -46,7 +46,7 @@ regd_users.post("/login", (req, res) => {
   });
 });
 
-// Task 9: Add or modify a book review
+// Task 9: Add or modify review - /auth/review/:isbn endpoint
 regd_users.put("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const review = req.query.review;
@@ -73,7 +73,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   });
 });
 
-// Task 10: Delete a book review
+// Task 10: Delete review - /auth/review/:isbn endpoint
 regd_users.delete("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const username = req.session.authorization.username;

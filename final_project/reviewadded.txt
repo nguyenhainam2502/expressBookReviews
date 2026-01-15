@@ -1,6 +1,6 @@
 ﻿{
     "message":  "Review successfully added/updated",
     "reviews":  {
-                    "testuser":  "Amazing book! Highly recommended."
+                    "testuser":  "Great book"
                 }
 }
