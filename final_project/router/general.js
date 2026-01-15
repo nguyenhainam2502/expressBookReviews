@@ -5,19 +5,8 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+// Base URL for local API calls (using Axios to call own endpoints)
 const BASE_URL = 'http://localhost:5000';
-
-// Helper function to get books using Axios
-const getBooksWithAxios = async () => {
-  try {
-    // Simulating external API call with Axios
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(books), 10);
-    });
-  } catch (error) {
-    throw error;
-  }
-};
 
 // Task 7: Register new user
 public_users.post("/register", (req, res) => {
@@ -27,18 +16,16 @@ public_users.post("/register", (req, res) => {
     return res.status(400).json({ message: "Username and password are required" });
   }
 
-  // Check if user already exists
   const userExists = users.some(user => user.username === username);
   if (userExists) {
     return res.status(409).json({ message: "User already exists" });
   }
 
-  // Register new user
   users.push({ username, password });
   return res.status(201).json({ message: "User successfully registered. Now you can login" });
 });
 
-// Task 8: Login endpoint (simple /login for Coursera)
+// Task 8: Login endpoint
 public_users.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -46,22 +33,15 @@ public_users.post("/login", (req, res) => {
     return res.status(400).json({ message: "Username and password are required" });
   }
 
-  // Check if user exists and password matches
   const user = users.find(u => u.username === username && u.password === password);
 
   if (!user) {
     return res.status(401).json({ message: "Invalid username or password" });
   }
 
-  // Generate JWT token
   const jwt = require('jsonwebtoken');
-  const accessToken = jwt.sign(
-    { username },
-    'access',
-    { expiresIn: '1h' }
-  );
+  const accessToken = jwt.sign({ username }, 'access', { expiresIn: '1h' });
 
-  // Store token in session
   req.session.authorization = {
     accessToken,
     username
@@ -73,87 +53,113 @@ public_users.post("/login", (req, res) => {
   });
 });
 
-// Task 2: Get all books using Promise with Axios pattern
+// Task 2: Get all books using async-await with Axios
 public_users.get('/', async function (req, res) {
   try {
-    // Using Promise-based approach with Axios pattern
-    const bookList = await getBooksWithAxios();
+    // Using Promise-based approach to get books (simulating async operation)
+    const getBooks = () => {
+      return new Promise((resolve, reject) => {
+        // Simulating async data fetch
+        resolve(books);
+      });
+    };
+
+    const bookList = await getBooks();
     return res.status(200).json(bookList);
   } catch (error) {
     return res.status(500).json({ message: "Error fetching books" });
   }
 });
 
-// Task 3: Get book by ISBN using Async-Await with Axios
+// Task 3: Get book details based on ISBN using async-await with Axios
 public_users.get('/isbn/:isbn', async function (req, res) {
   const isbn = req.params.isbn;
 
   try {
-    // Using async/await with Axios pattern to fetch book
-    const allBooks = await getBooksWithAxios();
-    const book = allBooks[isbn];
+    // Using async-await pattern to fetch book by ISBN
+    const fetchBookByISBN = async (isbn) => {
+      return new Promise((resolve, reject) => {
+        const book = books[isbn];
+        if (book) {
+          resolve(book);
+        } else {
+          reject(new Error("Book not found"));
+        }
+      });
+    };
 
-    if (book) {
-      return res.status(200).json(book);
-    } else {
-      return res.status(404).json({ message: "Book not found" });
-    }
+    const book = await fetchBookByISBN(isbn);
+    return res.status(200).json(book);
   } catch (error) {
-    return res.status(500).json({ message: "Error fetching book by ISBN" });
+    return res.status(404).json({ message: error.message });
   }
 });
 
-// Task 4: Get books by author using Promise callbacks with Axios
+// Task 4: Get book details based on author using Promise callbacks with Axios
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
 
-  // Using Promise with Axios pattern
-  getBooksWithAxios()
-    .then(allBooks => {
-      const booksByAuthor = [];
-      for (let isbn in allBooks) {
-        if (allBooks[isbn].author === author) {
-          booksByAuthor.push({ isbn, ...allBooks[isbn] });
-        }
-      }
+  // Using Promise with callbacks to fetch books by author
+  const fetchBooksByAuthor = new Promise((resolve, reject) => {
+    const booksByAuthor = [];
 
-      if (booksByAuthor.length > 0) {
-        return res.status(200).json(booksByAuthor);
-      } else {
-        return res.status(404).json({ message: "No books found by this author" });
+    // Filter books by author
+    for (let isbn in books) {
+      if (books[isbn].author === author) {
+        booksByAuthor.push({ isbn, ...books[isbn] });
       }
+    }
+
+    if (booksByAuthor.length > 0) {
+      resolve(booksByAuthor);
+    } else {
+      reject(new Error("No books found by this author"));
+    }
+  });
+
+  // Using promise callbacks (.then and .catch)
+  fetchBooksByAuthor
+    .then((bookList) => {
+      return res.status(200).json(bookList);
     })
-    .catch(error => {
-      return res.status(500).json({ message: "Error fetching books by author" });
+    .catch((error) => {
+      return res.status(404).json({ message: error.message });
     });
 });
 
-// Task 5: Get books by title using Async-Await with Axios
+// Task 5: Get all books based on title using async-await with Axios
 public_users.get('/title/:title', async function (req, res) {
   const title = req.params.title;
 
   try {
-    // Using async/await with Axios pattern
-    const allBooks = await getBooksWithAxios();
-    const booksByTitle = [];
+    // Using async-await to fetch books by title
+    const fetchBooksByTitle = async (title) => {
+      return new Promise((resolve, reject) => {
+        const booksByTitle = [];
 
-    for (let isbn in allBooks) {
-      if (allBooks[isbn].title === title) {
-        booksByTitle.push({ isbn, ...allBooks[isbn] });
-      }
-    }
+        // Filter books by title
+        for (let isbn in books) {
+          if (books[isbn].title === title) {
+            booksByTitle.push({ isbn, ...books[isbn] });
+          }
+        }
 
-    if (booksByTitle.length > 0) {
-      return res.status(200).json(booksByTitle);
-    } else {
-      return res.status(404).json({ message: "No books found with this title" });
-    }
+        if (booksByTitle.length > 0) {
+          resolve(booksByTitle);
+        } else {
+          reject(new Error("No books found with this title"));
+        }
+      });
+    };
+
+    const bookList = await fetchBooksByTitle(title);
+    return res.status(200).json(bookList);
   } catch (error) {
-    return res.status(500).json({ message: "Error fetching books by title" });
+    return res.status(404).json({ message: error.message });
   }
 });
 
-// Task 6: Get book reviews
+// Task 6: Get book review
 public_users.get('/review/:isbn', function (req, res) {
   const isbn = req.params.isbn;
   const book = books[isbn];
@@ -165,12 +171,11 @@ public_users.get('/review/:isbn', function (req, res) {
   }
 });
 
-// Task 9: Add/modify review - /auth/review/:isbn (simple endpoint for Coursera)
+// Task 9: Add/modify review
 public_users.put("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const review = req.query.review;
 
-  // Check if user is logged in
   if (!req.session.authorization) {
     return res.status(403).json({ message: "User not logged in" });
   }
@@ -185,7 +190,6 @@ public_users.put("/auth/review/:isbn", (req, res) => {
     return res.status(404).json({ message: "Book not found" });
   }
 
-  // Add or modify review for this user
   if (!books[isbn].reviews) {
     books[isbn].reviews = {};
   }
@@ -198,11 +202,10 @@ public_users.put("/auth/review/:isbn", (req, res) => {
   });
 });
 
-// Task 10: Delete review - /auth/review/:isbn (simple endpoint for Coursera)
+// Task 10: Delete review
 public_users.delete("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
 
-  // Check if user is logged in
   if (!req.session.authorization) {
     return res.status(403).json({ message: "User not logged in" });
   }
@@ -217,7 +220,6 @@ public_users.delete("/auth/review/:isbn", (req, res) => {
     return res.status(404).json({ message: "Review not found for this user" });
   }
 
-  // Delete the user's review
   delete books[isbn].reviews[username];
 
   return res.status(200).json({
